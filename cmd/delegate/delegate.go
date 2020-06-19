@@ -172,6 +172,11 @@ loop:
 			tx, err := genesisInstance.DepositDelegateStake(auth, delegate, elrondHash)
 
 			if err != nil {
+				if strings.Contains(err.Error(), "failed to estimate gas needed") {
+					log.Println("failed to delegate ERD:", err)
+					continue
+				}
+
 				log.Fatal(err)
 			}
 

@@ -9,6 +9,7 @@ import (
 	"math/big"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -93,6 +94,7 @@ func main() {
 	log.Println("Balance:", balance)
 
 	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Context = ctx
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)
 	auth.GasLimit = 0
@@ -148,6 +150,15 @@ loop:
 				delegate = balance
 			}
 
+			minimum := big.NewInt(0)
+			minimum.SetString("1000000000000000000000", 0) // 1000 ERD
+
+			if delegate.Cmp(minimum) == -1 {
+				log.Println("Amount to low")
+				time.Sleep(10 * time.Second)
+				continue
+			}
+
 			log.Println("Delegate:", delegate)
 
 			gasPrice, err = gas.GetPrice(gas.Fastest)
@@ -162,6 +173,11 @@ loop:
 			tx, err := genesisInstance.IncreaseDelegatedAmount(auth, delegate)
 
 			if err != nil {
+				if strings.Contains(err.Error(), "failed to estimate gas needed") {
+					log.Println("failed to delegate ERD:", err)
+					continue
+				}
+
 				log.Fatal(err)
 			}
 
