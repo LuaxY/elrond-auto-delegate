@@ -96,7 +96,7 @@ func main() {
 	auth := bind.NewKeyedTransactor(privateKey)
 	auth.Nonce = big.NewInt(int64(nonce))
 	auth.Value = big.NewInt(0)
-	auth.GasLimit = uint64(0)
+	auth.GasLimit = 0
 	auth.GasPrice = gasPrice
 
 	genesisInstance, err := genesis.NewGenesis(common.HexToAddress(cfg.Genesis), client)
