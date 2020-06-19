@@ -1,0 +1,9 @@
+ethProxy: wss://mainnet.infura.io/ws/v3/INFURA_TOKEN
+
+me:
+  public: ETH_ADDRESS
+  private: ETH_PRIVATE_KEY
+  elrond: ELROND_DECODED_BECH32_ADDRESS
+
+token: 0xf9986d445ced31882377b5d6a5f58eaea72288c3
+genesis: 0xc3a74d159bae0f886e7c76698e1e9b9f0b1a4eb7
