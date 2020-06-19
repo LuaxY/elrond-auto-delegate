@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"log"
@@ -144,15 +143,6 @@ func main() {
 			}
 
 			log.Println("Delegate:", delegate)
-
-			hash, err := hex.DecodeString(cfg.Me.Elrond)
-
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			var elrondHash [32]byte
-			copy(elrondHash[:], hash[:32])
 
 			gasPrice, err = gas.GetPrice(gas.Fastest)
 
