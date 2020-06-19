@@ -9,10 +9,10 @@ import (
 	"math/big"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 
@@ -113,14 +113,20 @@ func main() {
 	log.Println("Limit:  ", delegationAmountLimit)
 
 	sink := make(chan *genesis.GenesisStakeWithdrawn)
-	_, err = genesisInstance.WatchStakeWithdrawn(nil, sink, nil)
+	withdrawnSub, err := genesisInstance.WatchStakeWithdrawn(nil, sink, nil)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ticker := time.NewTicker(15 * time.Second)
+	headers := make(chan *types.Header)
+	headersSub, err := client.SubscribeNewHead(ctx, headers)
 
+	if err != nil {
+		log.Fatal(err)
+	}
+
+loop:
 	for {
 		currentTotalDelegated, err := genesisInstance.CurrentTotalDelegated(nil)
 
@@ -167,17 +173,21 @@ func main() {
 				log.Fatal(err)
 			}
 
-			log.Println("Tokens delegated")
+			log.Println("Tokens Delegated")
 			return
 		}
 
 		select {
 		case <-ctx.Done():
-			return
-		case <-ticker.C:
-			continue
+			break loop
 		case withdrawn := <-sink:
-			log.Println(withdrawn.Account.Hex(), withdrawn.Amount)
+			log.Println("StakeWithdrawn Event", withdrawn.Account.Hex(), withdrawn.Amount)
+		case err = <-withdrawnSub.Err():
+			log.Fatal(err)
+		case header := <-headers:
+			log.Println("New Block", header.Hash().Hex())
+		case err = <-headersSub.Err():
+			log.Fatal(err)
 		}
 	}
 }
